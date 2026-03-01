@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AQI Checker</title>
+
+  <style>
+
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 100px;
+      background: #f4f4f4;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+    }
+
+    input {
+      padding: 10px;
+      width: 250px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-left: 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background: #007bff;
+      color: white;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    #result {
+      margin-top: 40px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    #category {
+      margin-top: 10px;
+      font-size: 20px;
+    }
+
+    .good { color: green; }
+    .moderate { color: orange; }
+    .unhealthy { color: red; }
+    .very-unhealthy { color: purple; }
+    .hazardous { color: maroon; }
+
+  </style>
+
+</head>
+
+<body>
+
+<h1>Air Quality Index Checker</h1>
+
+<input 
+  type="text" 
+  id="placeInput" 
+  placeholder="Enter city name"
+/>
+
+<button onclick="getAQI()">Search</button>
+
+<div id="result"></div>
+<div id="category"></div>
+
+<script>
+
+function getAQICategory(aqi) {
+
+  if (aqi <= 50) {
+    return { text: "Good", class: "good" };
+  }
+
+  if (aqi <= 100) {
+    return { text: "Moderate", class: "moderate" };
+  }
+
+  if (aqi <= 150) {
+    return { text: "Unhealthy for Sensitive Groups", class: "unhealthy" };
+  }
+
+  if (aqi <= 200) {
+    return { text: "Unhealthy", class: "unhealthy" };
+  }
+
+  if (aqi <= 300) {
+    return { text: "Very Unhealthy", class: "very-unhealthy" };
+  }
+
+  return { text: "Hazardous", class: "hazardous" };
+
+}
+
+async function getAQI() {
+
+  const place = document.getElementById("placeInput").value;
+
+  if (!place) {
+    alert("Please enter a city name");
+    return;
+  }
+
+  document.getElementById("result").innerText = "Loading...";
+  document.getElementById("category").innerText = "";
+
+  try {
+
+    const response = await fetch(`http://localhost:8000/aqi/${place}`, {
+      headers: {
+        "x-api-key": "my-secret-api-key"
+      }
+    });
+
+    const data = await response.json();
+
+    const aqi = data.data.aqi;
+
+    const category = getAQICategory(aqi);
+
+    document.getElementById("result").innerText =
+      `AQI in ${place} is ${aqi}`;
+
+    const categoryElement = document.getElementById("category");
+
+    categoryElement.innerText = category.text;
+    categoryElement.className = category.class;
+
+  }
+
+  catch (error) {
+
+    document.getElementById("result").innerText =
+      "Error fetching AQI data";
+
+  }
+
+}
+
+
+document
+  .getElementById("placeInput")
+  .addEventListener("keypress", function(event) {
+
+    if (event.key === "Enter") {
+      getAQI();
+    }
+
+  });
+
+</script>
+
+</body>
+</html>
